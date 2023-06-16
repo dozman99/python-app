@@ -6,9 +6,6 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  DOTNET_VERSION: "6.0.x"
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -44,7 +41,7 @@ jobs:
         with:
           name: python-app
           path: |
-            . 
+            ./demo.code 
             !venv/
 
   deploy-to-stage-initial-slot:
