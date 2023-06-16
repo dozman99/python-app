@@ -34,7 +34,7 @@ jobs:
 
       - name: install dependencies if cache was not found
         #if: steps.cache.outputs.cache-hit != 'true'
-        run: pip install -r requirements.txt
+        run: cd demo.code/ && pip install -r requirements.txt
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v3
