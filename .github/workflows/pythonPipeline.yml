@@ -107,7 +107,7 @@ jobs:
     needs: deploy-to-prod-initial-slot
     runs-on: ubuntu-latest
     environment:
-      name: Production
+      name: production
       url: "https://${{ vars.WEBAPP_NAME }}-${{ vars.SLOT_NAME_B }}.azurewebsites.net/"
     steps:
       - name: Log into Azure CLI with service principal
