@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: swap-stage-slot
     environment:
-      name: "production"
+      name: production
       url: "https://${{ vars.WEBAPP_NAME }}.azurewebsites.net/"
 
     steps:
@@ -110,7 +110,7 @@ jobs:
     needs: deploy-to-prod-initial-slot
     runs-on: ubuntu-latest
     environment:
-      name: "Production"
+      name: Production
       url: "https://${{ vars.WEBAPP_NAME }}-${{ vars.SLOT_NAME_B }}.azurewebsites.net/"
     steps:
       - name: Log into Azure CLI with service principal
@@ -135,7 +135,7 @@ jobs:
     needs: test-with-prod-workload
     runs-on: ubuntu-latest
     environment:
-      name: "Production"
+      name: Production
       url: "https://${{ vars.WEBAPP_NAME }}.azurewebsites.net/"
     steps:
     
