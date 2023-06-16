@@ -1,0 +1,21 @@
+name: Rollback plan
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  rollback-deployment:
+    runs-on: ubuntu-latest
+    environment:
+      name: "Production"
+      url: "https://${{ vars.WEBAPP_NAME }}.azurewebsites.net/"
+    steps:
+      - name: Log into Azure CLI with service principal
+        uses: azure/login@v1.1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Swap slots
+        id: main-swap
+        run: az webapp deployment slot swap --resource-group ${{ vars.RESOURCE_GROUP }} --name ${{ vars.WEBAPP_NAME }} --slot ${{ vars.SLOT_NAME_A }}

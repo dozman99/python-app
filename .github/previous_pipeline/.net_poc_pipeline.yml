@@ -1,0 +1,97 @@
+# name: hello-world application POC
+# on:
+#   push:
+#     branches:
+# #      - main
+# env:
+# RESOURCE_GROUP: replace-with-your-rg-name
+# WEBAPP_NAME: hello-world
+# SLOT_NAME: staging # Create a slot on your web app called "staging"
+# DOTNET_VERSION: "6.0.x"
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Check out repo
+#         uses: actions/checkout@v1
+
+#       - name: Retrieve cached node module directory -if present
+#         uses: actions/cache@v2
+#         id: hello-world-cache
+#         with:
+#           path: node modules
+#           key: node-modules-${{ runner.os }}-hello-world-build-${{ hashFiles('package-lock.json') }}
+
+#       - name: Install dependencies (if the cached directory was not found)
+#         if: steps.hello-world-cache.outputs.cache-hit != 'true'
+
+#       - name: Set up .Net
+#         uses: actions/setup-java@v3
+#         with:
+#           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+#       - name: Set up dependency caching for net
+#         uses: actions/cache@v2
+#         with:
+#           path: ~/.nuget/packages
+#           key: ${( runner.os })-nuget-hello-world-build-${{ hashfiles('**/*.csproj') }}
+#           restore_keys: |
+#             ${{ runner.os }}-nuget-hello-world-build-
+
+#       - name: Build hello-world
+#         run: dotnet build hello-world.Function -c Release
+
+#       - name: Publish hello-world
+#         run: dotnet publish hello-world.Function -c Release
+
+#       - name: Test hello-world
+#         run: dotnet test hello-world.Function -c Release
+
+#       - name: Archive function artifacts for hello-world app
+#         uses: actions/upload-artifact@v2
+#         with:
+#           name: hello-world-function-artifact
+#           path: /home/runner/work/hello-world/hello-world/hello-world.Function
+#   deploy-to-stage:
+#     name: Deploy to staging
+#     needs: build
+#     runs-on: ubuntu-latest
+#     environment:
+#       name: "Staging"
+#       url: ${{ steps.deploy-to-stage.outputs.webapp-url }}
+#     steps:
+#       - name: Log into Azure CLI with service principal
+#         uses: azure/login@v1.1
+#         with:
+#           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+#       - name: Download infrastructure artifacts for function
+#         uses: actions/download-artifact@v2
+#         with:
+#           name: hello-world-function_artifact
+#           path: ${{ env. RUNNER_DIR }}hello-world/hello-world/hello-world.Function
+
+#       - name: Deploy to stage env
+#         uses: azure/webapps-deploy@v1
+#         id: deploy-to-stage
+#         with:
+#           app-name: ${{ env.WEBAPP_NAME }}
+#           slot-name: ${{ env.SLOT_NAME }}
+#           package: "*.war"
+#   release-to-prod:
+#     name: Release to prod
+#     needs: deploy-to-stage
+#     runs-on: ubuntu-latest
+#     environment:
+#       name: "Production"
+#       url: "https://${{ env.WEBAPP_NAME }}.azurewebsites.net/"
+#     steps:
+#       - name: Log into Azure CLI with service principal
+#         uses: azure/login@v1.1
+#         with:
+#           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+#       - name: Swap slots
+#         id: main-swap
+#         run: az webapp deployment slot swap -s ${{ env.SLOT_NAME }} -n ${{ env.WEBAPP_NAME }} -g ${{ env.RESOURCE_GROUP }}

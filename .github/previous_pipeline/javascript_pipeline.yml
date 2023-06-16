@@ -1,0 +1,136 @@
+name: Build and deploy Javascript app to Azure Web App
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+    - demo.code
+  workflow_dispatch:
+  #workflow_run:
+   # workflows: ["Build"]
+    #types:
+     # - completed
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Install Dependencies
+        run: cd demo.code && yarn install && yarn build
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: demo-app
+          path: ./demo.code/
+
+
+  deploy-to-stage-initial-slot:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: stage
+      url: "https://${{ vars.WEBAPP_NAME }}-${{ vars.SLOT_NAME_B }}.azurewebsites.net/"
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: demo-app
+          path: .
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        id: deploy-to-webapp
+        with:
+          #app-name: ${{ vars.WEBAPP_NAME }}
+          #slot-name: ${{ vars.SLOT_NAME_B }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+
+  swap-stage-slot:
+    needs: deploy-to-stage-initial-slot
+    runs-on: ubuntu-latest
+    environment:
+      name: stage
+      url: "https://${{ vars.WEBAPP_NAME }}.azurewebsites.net/"
+    steps:
+      - name: Log into Azure CLI with service principal
+        uses: azure/login@v1.1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Swap slots
+        id: main-swap
+        run: az webapp deployment slot swap --resource-group ${{ vars.RESOURCE_GROUP }} --name ${{ vars.WEBAPP_NAME }} --slot ${{ vars.SLOT_NAME_B }} 
+  
+  deploy-to-prod-initial-slot:
+    runs-on: ubuntu-latest
+    needs: swap-stage-slot
+    environment:
+      name: "production"
+      url: "https://${{ vars.WEBAPP_NAME }}.azurewebsites.net/"
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: demo-app
+          path: .
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        id: deploy-to-webapp
+        with:
+          #app-name: ${{ vars.WEBAPP_NAME }}
+          #slot-name: ${{ vars.SLOT_NAME_B }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+
+  test-with-prod-workload:
+    needs: deploy-to-prod-initial-slot
+    runs-on: ubuntu-latest
+    environment:
+      name: "Production"
+      url: "https://${{ vars.WEBAPP_NAME }}-${{ vars.SLOT_NAME_B }}.azurewebsites.net/"
+    steps:
+      - name: Log into Azure CLI with service principal
+        uses: azure/login@v1.1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Traffic test slots
+        id: trafic-test
+        run: az webapp traffic-routing set --distribution ${{ vars.SLOT_NAME_B }}=30 --name ${{ vars.WEBAPP_NAME }} -g ${{ vars.RESOURCE_GROUP }}
+
+      - name: ITSM Integration
+        env:
+          ITSM_API_TOKEN: ${{ secrets.ITSM_API_TOKEN }}
+        run: |
+          # Your custom integration script
+          # Example: create a ticket or update a ticket in the ITSM system
+        # echo "Creating ticket in ITSM system"
+        # curl -X POST -H "Authorization: Bearer $ITSM_API_TOKEN" -d '{"title": "Pipeline Deployment", "status": "In Progress"}' https://itsm-api.example.com/tickets
+
+  final-deployment:
+    needs: test-with-prod-workload
+    runs-on: ubuntu-latest
+    environment:
+      name: "Production"
+      url: "https://${{ vars.WEBAPP_NAME }}.azurewebsites.net/"
+    steps:
+    
+      - name: Log into Azure CLI with service principal
+        uses: azure/login@v1.1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Swap slots
+        id: main-swap
+        run: az webapp deployment slot swap --resource-group ${{ vars.RESOURCE_GROUP }} --name ${{ vars.WEBAPP_NAME }} --slot ${{ vars.SLOT_NAME_B }}  --target-slot ${{ vars.SLOT_NAME_A }}
