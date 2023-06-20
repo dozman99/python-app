@@ -86,7 +86,7 @@ jobs:
     needs: swap-stage-slot
     environment:
       name: production
-      url: "https://${{ vars.WEBAPP_NAME }}.azurewebsites.net/"
+      url: "https://${{ vars.WEBAPP_NAME }}-${{ vars.SLOT_NAME_B }}.azurewebsites.net/"
 
     steps:
       - name: Download artifact from build job
