@@ -56,7 +56,7 @@ jobs:
 
       - uses: pulumi/actions@v3
         with:
-          work-dir: ./demo.test
+          work-dir: ./demo.infra
           command: up
           stack-name: odada123/test
       
