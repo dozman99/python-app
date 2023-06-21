@@ -58,7 +58,7 @@ jobs:
         with:
           work-dir: ./demo.test
           command: up
-          stack-name: odada123/infra
+          stack-name: odada123/test
       
         env:
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
