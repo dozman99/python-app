@@ -22,6 +22,8 @@ on:
         required: true
       AZURE_CREDENTIALS:
         required: true
+      PULUMI_ORGANISATION_REF:
+        required: true
 
 jobs:
   deployment:
@@ -46,7 +48,8 @@ jobs:
         with:
           work-dir: ./demo.infra
           command: refresh
-          stack-name: odada123/test
+          stack-name: ${{ inputs.PULUMI_ORGANISATION_REF }}/${{ inputs.ENVIRONMENT_NAME }}
+
         env:
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
@@ -58,8 +61,7 @@ jobs:
         with:
           work-dir: ./demo.infra
           command: up
-          stack-name: odada123/test
-      
+          stack-name: ${{ inputs.PULUMI_ORGANISATION_REF }}/${{ inputs.ENVIRONMENT_NAME }}      
         env:
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}

@@ -1,5 +1,4 @@
 name: infra
 runtime: nodejs
 description: A minimal Azure Native TypeScript Pulumi program
-config:
-  azure-native:location:EastUS2
+

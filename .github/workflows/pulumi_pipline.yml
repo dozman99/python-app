@@ -36,6 +36,7 @@ jobs:
     with:
       RUNNER: "ubuntu-latest"
       ENVIRONMENT_NAME: stage
+      PULUMI_ORGANISATION_REF: odada123
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
@@ -50,6 +51,7 @@ jobs:
     with:
       RUNNER: "ubuntu-latest"
       ENVIRONMENT_NAME: production
+      PULUMI_ORGANISATION_REF: odada123
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}

@@ -1,13 +1,17 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure-native";
 
+
+const stackName = pulumi.getStack();
+
+
 // resource group
-const resourceGroup = new azure.resources.ResourceGroup("resourceGroup", {
+const resourceGroup = new azure.resources.ResourceGroup(`${stackName}-resourceGroup`, {
     location: "eastus2", 
 })
 
 // app service plan
-const appServicePlan = new azure.web.AppServicePlan("appServicePlan", {
+const appServicePlan = new azure.web.AppServicePlan(`${stackName}-appServicePlan`, {
     kind: "Linux",
     resourceGroupName: resourceGroup.name,
     location: resourceGroup.location,
@@ -23,24 +27,8 @@ const appServicePlan = new azure.web.AppServicePlan("appServicePlan", {
 );
 
 
-// app service plan
-const appServicePlanStaging = new azure.web.AppServicePlan("appServicePlanStaging", {
-    kind: "Linux",
-    resourceGroupName: resourceGroup.name,
-    location: resourceGroup.location,
-    reserved: true,
-    sku: {
-        name: "S1",
-        tier: "Standard",
-    },
-},
-    {
-        dependsOn: resourceGroup
-    }
-);
-
-// webApp for the production 
-const webAppProduction = new azure.web.WebApp("webAppProduction", {
+// webApp
+const webApp = new azure.web.WebApp(`${stackName}-webApp`, {
     resourceGroupName: resourceGroup.name,
     location: resourceGroup.location,
     serverFarmId: appServicePlan.id,
@@ -53,42 +41,15 @@ const webAppProduction = new azure.web.WebApp("webAppProduction", {
     }
 );
 
-// webApp for staging
-const webAppStaging = new azure.web.WebApp("webAppStaging", {
-    resourceGroupName: resourceGroup.name,
-    location: resourceGroup.location,
-    serverFarmId: appServicePlanStaging.id,
-    siteConfig: {
-        alwaysOn: true
-    }
-},
-    {
-        dependsOn: appServicePlanStaging
-    }
-);
 
-
-// initial prod slot
-const productionSlot = new azure.web.WebAppSlot("productionSlot", {
-    name: webAppProduction.name,
+// initial slot
+const productionSlot = new azure.web.WebAppSlot("initial", {
+    name: webApp.name,
     serverFarmId: appServicePlan.id,
     location: resourceGroup.location,
     resourceGroupName: resourceGroup.name,
 },
     {
-        dependsOn: webAppProduction
-    }
-);
-
-
-// initial staging slot
-const stagingSlot = new azure.web.WebAppSlot("stagingSlot", {
-    name: webAppStaging.name,
-    location: resourceGroup.location,
-    serverFarmId: appServicePlanStaging.id,
-    resourceGroupName: resourceGroup.name,
-},
-    {
-        dependsOn: webAppStaging
+        dependsOn: webApp
     }
 );
