@@ -110,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: "https://${{ vars.WEBAPP_NAME }}-${{ vars.SLOT_NAME_B }}.azurewebsites.net/"
+      url: "https://${{ vars.WEBAPP_NAME }}.azurewebsites.net/"
     steps:
       - name: Log into Azure CLI with service principal
         uses: azure/login@v1.1
