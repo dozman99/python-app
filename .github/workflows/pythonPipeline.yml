@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-    - demo.code
+    - 'demo.code/**'
   workflow_dispatch:
 
 jobs:
