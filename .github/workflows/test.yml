@@ -25,8 +25,8 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          name: OspExtensionCommonObjects.zip 
+          name: empty_artifact.txt 
           github-token: ${{ secrets.GH_TOKEN }}
-          repository: jci-products/acvs-osp-extensions 
+          repository: dozman99/test 
           run-id: ${{ env.RUN_ID }}
           
