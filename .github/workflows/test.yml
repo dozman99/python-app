@@ -1,31 +1,39 @@
-name: Build and Upload Artifact
+name: Build and Package Artifact
 
 on:
   push:
     branches:
       - main
-  pull_request:
+  workflow_dispatch: # Allow manual triggering
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.21'
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18' # or your desired node version
 
-      - name: Build application
-        run: go build -o myapp
+    - name: Install dependencies
+      run: npm install
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: my-built-application
-          path: myapp
-          retention-days: 7  # The artifact will be stored for 7 days
-          
+    - name: Build application
+      run: npm run build # or your build command
+
+    - name: Package artifact
+      run: |
+        mkdir dist-package
+        cp -r dist/* dist-package/
+        tar -czvf app-artifact.tar.gz dist-package/
+        rm -rf dist-package
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-artifact
+        path: app-artifact.tar.gz
