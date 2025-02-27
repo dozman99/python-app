@@ -1,24 +1,31 @@
-name: Build and Package Artifact
+name: Transfer Extension
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch: # Allow manual triggering
+  workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
+  transfer_extension:
+    runs-on: [self-hosted, linux, osp-cloud-devOps-runner1]
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Get Latest Run ID
+        id: get_run_id
+        run: |
+          REPO="dozman99/test" # Replace with your target repository
+          WORKFLOW_ID="blank.yml" # Replace with the target workflow file name
+          GH_TOKEN="${{ secrets.GH_TOKEN }}"
+          
+          RUN_ID=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW_ID" | jq '.id')
+          
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
 
-    - name: Get Workflow Info
-      run: |
-        curl -L \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/dozman99/test/actions/workflows/blank.yml | jq '.id'
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: OspExtensionCommonObjects.zip 
+          github-token: ${{ secrets.GH_TOKEN }}
+          repository: jci-products/acvs-osp-extensions 
+          run-id: ${{ env.RUN_ID }}
           
