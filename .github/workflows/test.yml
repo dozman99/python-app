@@ -27,9 +27,10 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
+          name: empty-artifact
           github-token: ${{ secrets.GH_TOKEN }}
           repository: dozman99/test 
-          pattern: empty_*
+          # pattern: empty_*
           merge-multiple: true
           run-id: ${{ env.RUN_ID }}
           
