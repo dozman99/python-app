@@ -25,8 +25,9 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          name: empty_artifact.txt 
+          name: artifact
           github-token: ${{ secrets.GH_TOKEN }}
+          path: /
           repository: dozman99/test 
           run-id: ${{ env.RUN_ID }}
           
