@@ -27,7 +27,8 @@ jobs:
         with:
           name: artifact
           github-token: ${{ secrets.GH_TOKEN }}
-          path: /
           repository: dozman99/test 
+          pattern: empty_*
+          merge-multiple: true
           run-id: ${{ env.RUN_ID }}
           
